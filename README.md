@@ -13,7 +13,7 @@ GoDiag is a powerful diagnostic tool that collects essential system information,
 
 Below is a preview of the GoDiag interface and output:
 
-[GoDiag Preview](​https://i.lewdlilly.tv/52b31a0cd.png)
+![GoDiag Preview](https://cdn.hyrule.pics/52b31a0cd.png)
 
 
 ## Usage
