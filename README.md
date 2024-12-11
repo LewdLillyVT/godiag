@@ -31,5 +31,5 @@ GoDiag will generate the following files in the `/LOCALAPPDATA/Temp/DiagnosticsF
 - **system_info_report.txt** - A summary report of core system information.
 - **Health_Report.txt** - A summary of your drive health.
 - **SteamVR_Report.txt** - SteamVR diagnostic report. *(Work in Progress)*
-- **ETL_Files** - Extracted Event Trace Logs for system events and performance monitoring.
+- **event_trace_log.etl** - Extracted Event Trace Logs for system events and performance monitoring.
 
