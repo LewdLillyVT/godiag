@@ -1,6 +1,8 @@
 # Welcome to the GoDiag beta channel
 Here in the beta channel you will find all the upcoming features for GoDiag.
 
+To use the beta release you can download the latest pre-release or build the beta release yourself
+---
 
 GoDiag is a powerful diagnostic tool that collects essential system information, providing comprehensive reports and summaries. This utility generates `.nfo`, `.etl` and `.txt` reports, dumps the latest system events, and offers a detailed system info report for troubleshooting and system analysis.
 
