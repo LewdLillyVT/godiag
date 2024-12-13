@@ -1,4 +1,4 @@
-module godiag
+module GoDiag-beta
 
 go 1.23.2
 
