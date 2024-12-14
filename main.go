@@ -2,6 +2,13 @@ package main
 
 import (
 	"GoDiag-beta/modules"
+	"GoDiag-beta/rpc"
+	"encoding/json"
+	"net/url"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -10,6 +17,50 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
+
+type Settings struct {
+	RPCEnabled bool `json:"rpc_enabled"`
+}
+
+const settingsFileName = "settings.json"
+
+func loadSettings() (*Settings, error) {
+	settingsPath := filepath.Join(os.Getenv("LOCALAPPDATA"), "GoDiag", settingsFileName)
+	file, err := os.Open(settingsPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return &Settings{RPCEnabled: true}, nil
+		}
+		return nil, err
+	}
+	defer file.Close()
+
+	settings := &Settings{}
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(settings)
+	if err != nil {
+		return nil, err
+	}
+
+	return settings, nil
+}
+
+func saveSettings(settings *Settings) error {
+	settingsDir := filepath.Join(os.Getenv("LOCALAPPDATA"), "GoDiag")
+	if err := os.MkdirAll(settingsDir, os.ModePerm); err != nil {
+		return err
+	}
+
+	settingsPath := filepath.Join(settingsDir, settingsFileName)
+	file, err := os.Create(settingsPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	return encoder.Encode(settings)
+}
 
 func main() {
 	myApp := app.NewWithID("tv.lewdlilly.GoDiag.beta")
@@ -23,6 +74,47 @@ func main() {
 		return
 	}
 
+	settings, err := loadSettings()
+	if err != nil {
+		dialog.ShowError(err, myWindow)
+		return
+	}
+
+	// Track RPC state
+	var rpcRunning = settings.RPCEnabled
+
+	// Start RPC if enabled
+	if rpcRunning {
+		go func() {
+			rpcErr := rpc.StartRPC()
+			if rpcErr != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Title:   "RPC Error",
+					Content: rpcErr.Error(),
+				})
+			}
+		}()
+	}
+
+	cleanup := func() {
+		if rpcRunning {
+			rpc.StopRPC()
+		}
+	}
+
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-signalChannel
+		cleanup()
+		os.Exit(0)
+	}()
+
+	myWindow.SetOnClosed(func() {
+		cleanup()
+	})
+
+	// Diagnostics buttons...
 	msInfoButton := widget.NewButton("Generate msinfo32.nfo", func() {
 		err := modules.GenerateMsinfo32(outputDir)
 		if err != nil {
@@ -41,7 +133,6 @@ func main() {
 		}
 	})
 
-	// Adding ETL logs button
 	etlLogButton := widget.NewButton("Generate Event Trace Log (ETL)", func() {
 		err := modules.GenerateETLLog(outputDir)
 		if err != nil {
@@ -51,7 +142,6 @@ func main() {
 		}
 	})
 
-	// Adding BIOS/UEFI Version Report button
 	biosReportButton := widget.NewButton("Generate BIOS/UEFI Version Report", func() {
 		err := modules.GenerateBIOSReport(outputDir)
 		if err != nil {
@@ -88,7 +178,6 @@ func main() {
 		}
 	})
 
-	// Adding Security and Antivirus Logs button
 	securityLogsButton := widget.NewButtonWithIcon("Generate Security and Antivirus Logs", theme.GridIcon(), func() {
 		err := modules.GenerateSecurityAndAntivirusLogs(outputDir)
 		if err != nil {
@@ -98,22 +187,72 @@ func main() {
 		}
 	})
 
-	// Add other buttons here following the same pattern...
+	// Help Tab
+	linkURL := &url.URL{
+		Scheme: "https",
+		Host:   "github.com",
+		Path:   "LewdLillyVT/godiag",
+	}
 
-	content := container.NewVBox(
-		widget.NewLabel("Diagnostics Tool"),
-		widget.NewLabel("Files saved to: "+outputDir),
-		msInfoButton,
-		dxdiagButton,
-		sysInfoButton,
-		eventLogButton,
-		healthButton,
-		etlLogButton,
-		biosReportButton,
-		securityLogsButton,
-		// Add other buttons here
+	helpTab := container.NewTabItem("Help",
+		container.NewVBox(
+			widget.NewLabel("Help & Documentation"),
+			widget.NewLabel("For more information, visit:"),
+			widget.NewHyperlink("GoDiag Repository", linkURL),
+		),
 	)
 
-	myWindow.SetContent(content)
+	// Settings Tab
+	rpcToggle := widget.NewCheck("Enable RPC", func(checked bool) {
+		rpcRunning = checked
+		settings.RPCEnabled = checked
+		if err := saveSettings(settings); err != nil {
+			dialog.ShowError(err, myWindow)
+		}
+
+		if checked {
+			go func() {
+				rpcErr := rpc.StartRPC()
+				if rpcErr != nil {
+					fyne.CurrentApp().SendNotification(&fyne.Notification{
+						Title:   "RPC Error",
+						Content: rpcErr.Error(),
+					})
+				}
+			}()
+		} else {
+			rpc.StopRPC()
+		}
+	})
+	rpcToggle.SetChecked(settings.RPCEnabled)
+
+	settingsTab := container.NewTabItem("Settings",
+		container.NewVBox(
+			widget.NewLabel("Settings"),
+			rpcToggle,
+		),
+	)
+
+	// Diagnostics/Main Tab
+	mainTab := container.NewTabItem("Main",
+		container.NewVBox(
+			msInfoButton,
+			dxdiagButton,
+			sysInfoButton,
+			eventLogButton,
+			healthButton,
+			etlLogButton,
+			biosReportButton,
+			securityLogsButton,
+		),
+	)
+
+	tabs := container.NewAppTabs(
+		mainTab,
+		helpTab,
+		settingsTab,
+	)
+
+	myWindow.SetContent(tabs)
 	myWindow.ShowAndRun()
 }

@@ -2,7 +2,10 @@ module GoDiag-beta
 
 go 1.23.2
 
-require fyne.io/fyne/v2 v2.5.2
+require (
+	fyne.io/fyne/v2 v2.5.2
+	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
+)
 
 require (
 	fyne.io/systray v1.11.0 // indirect
@@ -18,6 +21,7 @@ require (
 	github.com/go-text/render v0.2.0 // indirect
 	github.com/go-text/typesetting v0.2.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/jeandeaual/go-locale v0.0.0-20240223122105-ce5225dcaa49 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
@@ -33,5 +37,6 @@ require (
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
+	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
