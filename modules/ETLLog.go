@@ -8,7 +8,7 @@ import (
 
 // generateETLLog generates an Event Trace Log (ETL) file and saves it to the output directory.
 func GenerateETLLog(outputDir string) error {
-	outputPath := filepath.Join(outputDir, "event_trace_log.etl")
+	outputPath := filepath.Join(outputDir, "event_trace_log.evtx")
 
 	// Use wevtutil to export the system log to an ETL file
 	cmd := exec.Command("wevtutil", "epl", "System", outputPath)
