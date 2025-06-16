@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	currentVersion = "1.0.3"
+	currentVersion = "1.0.5"
 	updateCheckURL = "https://raw.githubusercontent.com/LewdLillyVT/godiag/refs/heads/main/version.json"
 )
 
@@ -124,7 +124,7 @@ func saveSettings(settings *Settings) error {
 
 func main() {
 	myApp := app.NewWithID("tv.lewdlilly.GoDiag.beta")
-	myWindow := myApp.NewWindow("GoDiag Beta by LewdLillyVT")
+	myWindow := myApp.NewWindow("GoDiag by LewdLillyVT")
 	myWindow.Resize(fyne.NewSize(400, 600))
 
 	// Ensure the output directory exists
