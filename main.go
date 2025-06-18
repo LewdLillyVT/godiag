@@ -1,8 +1,8 @@
 package main
 
 import (
-	"GoDiag-beta/modules"
-	"GoDiag-beta/rpc"
+	"GoDiag/modules"
+	"GoDiag/rpc"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	currentVersion = "1.0.5"
+	currentVersion = "1.0.7"
 	updateCheckURL = "https://raw.githubusercontent.com/LewdLillyVT/godiag/refs/heads/main/version.json"
 )
 
@@ -255,6 +255,78 @@ func main() {
 		}
 	})
 
+	networkDiagButton := widget.NewButton("Generate Network Diagnostics Report", func() {
+		err := modules.GenerateNetworkReport(outputDir)
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "Network_Diagnostics_Report.txt created successfully", myWindow)
+		}
+	})
+
+	flushDNSButton := widget.NewButton("Flush DNS Cache", func() {
+		err := modules.FlushDNSCache()
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "DNS cache flushed successfully.", myWindow)
+		}
+	})
+
+	softwareDiagButton := widget.NewButton("Generate Software & Application Report", func() {
+		err := modules.GenerateSoftwareReport(outputDir)
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "Software_Diagnostics_Report.txt created successfully", myWindow)
+		}
+	})
+
+	hardwareButton := widget.NewButton("Generate Hardware & Peripherals Report", func() {
+		err := modules.GenerateHardwareReport(outputDir)
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "Hardware_Peripherals_Report.txt created successfully", myWindow)
+		}
+	})
+
+	driverManagementButton := widget.NewButton("Generate Driver Report", func() {
+		err := modules.GenerateDriverReport(outputDir)
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "Driver_Report.txt created successfully", myWindow)
+		}
+	})
+
+	registryExportButton := widget.NewButton("Export Common Registry Keys", func() {
+		err := modules.GenerateRegistryExport(outputDir)
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "Common registry keys exported successfully.\nSee Registry_Export_Summary.txt for details on exported files.", myWindow)
+		}
+	})
+
+	startupProgramsButton := widget.NewButton("Generate Startup Programs Report", func() {
+		err := modules.GenerateStartupProgramsReport(outputDir) // Call the new function
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "Startup_Programs_Report.txt created successfully", myWindow)
+		}
+	})
+
+	runningProcessesButton := widget.NewButton("Generate Running Processes Report", func() {
+		err := modules.GenerateRunningProcessesReport(outputDir) // Call the new function
+		if err != nil {
+			dialog.ShowError(err, myWindow)
+		} else {
+			dialog.ShowInformation("Success", "Running_Processes_Report.txt created successfully", myWindow)
+		}
+	})
+
 	// Help Tab
 	linkURL := &url.URL{
 		Scheme: "https",
@@ -312,6 +384,14 @@ func main() {
 			etlLogButton,
 			biosReportButton,
 			securityLogsButton,
+			networkDiagButton,
+			flushDNSButton,
+			softwareDiagButton,
+			hardwareButton,
+			driverManagementButton,
+			registryExportButton,
+			startupProgramsButton,
+			runningProcessesButton,
 		),
 	)
 
