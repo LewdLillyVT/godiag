@@ -123,7 +123,7 @@ func saveSettings(settings *Settings) error {
 }
 
 func main() {
-	myApp := app.NewWithID("tv.lewdlilly.GoDiag.beta")
+	myApp := app.NewWithID("tv.lewdlilly.GoDiag")
 	myWindow := myApp.NewWindow("GoDiag by LewdLillyVT")
 	myWindow.Resize(fyne.NewSize(400, 600))
 
