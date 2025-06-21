@@ -1,6 +1,6 @@
 # GoDiag
 
-GoDiag is a powerful diagnostic tool that collects essential system information, providing comprehensive reports and summaries. This utility generates `.nfo`, `.etl`, and `.txt` reports, dumps the latest system events, and offers a detailed system info report for troubleshooting and system analysis.
+GoDiag is a powerful diagnostic tool that collects essential system information, providing comprehensive reports and summaries. This utility generates `.nfo`, `.evtx`, and `.txt` reports, dumps the latest system events, and offers a detailed system info report for troubleshooting and system analysis.
 
 ## Features
 
