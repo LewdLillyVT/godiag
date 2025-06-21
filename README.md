@@ -37,7 +37,6 @@ GoDiag will generate the following files and folders in the `%LOCALAPPDATA%\Temp
 -   **Event_Log_Dump.txt**: Recent system events (warnings, errors, critical).
 -   **Quick_System_Info.txt**: A summary report of core system information (CPU, GPU, RAM, OS).
 -   **Health_Report.txt**: A summary of your drive health and SMART data.
--   **SteamVR_Report.txt**: SteamVR diagnostic report. *(Work in Progress)*
 -   **event_trace_log.evtx**: Extracted Event Trace Logs for system events and performance monitoring.
 -   **Security_Antivirus_Logs.txt**: A summary of the latest Windows security and Windows Defender logs.
 -   **BIOS_Report.txt**: Shows the latest BIOS/UEFI version information.
