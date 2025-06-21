@@ -8,7 +8,6 @@ GoDiag is a powerful diagnostic tool that collects essential system information,
 -   **DxDiag Report**: Creates a `dxdiag.txt` file, which provides diagnostic information on DirectX components and drivers, valuable for troubleshooting graphical or hardware issues.
 -   **System Events Dump**: Captures and outputs recent system event logs, including errors, warnings, and critical events.
 -   **Comprehensive System Report**: Generates a summary report with core system information in one place.
--   **SteamVR Report**: Generates a SteamVR diagnostic report. *(Work in Progress)*
 -   **ETL Logs**: Extracts Event Trace Log (ETL) files from the system for detailed event analysis.
 -   **System Security & Antivirus Logs**: Extracts the latest system security and Windows Defender logs.
 -   **BIOS/UEFI Version Report**: Reads the latest version information of the BIOS/UEFI.
