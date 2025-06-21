@@ -19,10 +19,12 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	sqdialog "github.com/sqweek/dialog"
 )
 
 const (
-	currentVersion = "1.0.7"
+	currentVersion = "1.0.8"
 	updateCheckURL = "https://raw.githubusercontent.com/LewdLillyVT/godiag/refs/heads/main/version.json"
 )
 
@@ -32,7 +34,8 @@ type VersionInfo struct {
 }
 
 type Settings struct {
-	RPCEnabled bool `json:"rpc_enabled"`
+	RPCEnabled        bool   `json:"rpc_enabled"`
+	SelectedOutputDir string `json:"selected_output_dir"`
 }
 
 const settingsFileName = "settings.json"
@@ -84,42 +87,36 @@ func promptForUpdate(versionInfo *VersionInfo, myWindow fyne.Window) {
 	)
 }
 
-func loadSettings() (*Settings, error) {
+func loadSettings() (Settings, error) { // Signature changed to return error
 	settingsPath := filepath.Join(os.Getenv("LOCALAPPDATA"), "GoDiag", settingsFileName)
-	file, err := os.Open(settingsPath)
+	data, err := ioutil.ReadFile(settingsPath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return &Settings{RPCEnabled: true}, nil
-		}
-		return nil, err
-	}
-	defer file.Close()
-
-	settings := &Settings{}
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(settings)
-	if err != nil {
-		return nil, err
+		// If file not found or any read error, return default settings and the error
+		return Settings{RPCEnabled: false, SelectedOutputDir: ""}, err
 	}
 
-	return settings, nil
+	var settings Settings
+	if err := json.Unmarshal(data, &settings); err != nil {
+		// If unmarshalling fails, return default settings and the error
+		return Settings{RPCEnabled: false, SelectedOutputDir: ""}, err
+	}
+	modules.SetCustomOutputDir(settings.SelectedOutputDir)
+	return settings, nil // Successfully loaded, return nil error
 }
 
-func saveSettings(settings *Settings) error {
+func saveSettings(settings Settings) error {
 	settingsDir := filepath.Join(os.Getenv("LOCALAPPDATA"), "GoDiag")
 	if err := os.MkdirAll(settingsDir, os.ModePerm); err != nil {
-		return err
+		return fmt.Errorf("failed to create settings directory: %w", err)
 	}
 
 	settingsPath := filepath.Join(settingsDir, settingsFileName)
-	file, err := os.Create(settingsPath)
+	data, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal settings: %w", err)
 	}
-	defer file.Close()
 
-	encoder := json.NewEncoder(file)
-	return encoder.Encode(settings)
+	return ioutil.WriteFile(settingsPath, data, 0644)
 }
 
 func main() {
@@ -343,7 +340,49 @@ func main() {
 	)
 
 	// Settings Tab
-	rpcToggle := widget.NewCheck("Enable RPC", func(checked bool) {
+	// Display for current output directory
+	currentOutputDirLabel := widget.NewLabel(fmt.Sprintf("Current Output Path: %s", modules.GetCustomOutputDir()))
+	// Update the label whenever the output directory changes
+	updateOutputDirLabel := func() {
+		currentOutputDirLabel.SetText(fmt.Sprintf("Current Output Path: %s", modules.GetCustomOutputDir()))
+	}
+
+	selectDirButton := widget.NewButton("Select Output Directory", func() {
+		// Use sqdialog.Directory() for directory selection
+		selectedPath, err := sqdialog.Directory().Title("Select Output Directory").Browse()
+		if err != nil {
+			// sqweek/dialog returns an error if cancelled. Check specifically for this.
+			if err.Error() == "dialog cancelled" {
+				fmt.Println("Directory selection cancelled by user.")
+			} else {
+				dialog.ShowError(fmt.Errorf("failed to open directory dialog: %w", err), myWindow) // Use Fyne's dialog for actual errors
+			}
+			return
+		}
+		if selectedPath != "" {
+			settings.SelectedOutputDir = selectedPath // Store in settings struct
+			modules.SetCustomOutputDir(selectedPath)  // Update in modules package
+			if err := saveSettings(settings); err != nil {
+				dialog.ShowError(err, myWindow) // Use Fyne's dialog for error
+			} else {
+				dialog.ShowInformation("Success", "Output directory set successfully!", myWindow) // Use Fyne's dialog for success
+			}
+			updateOutputDirLabel() // Update the label in the UI
+		}
+	})
+
+	resetDirButton := widget.NewButton("Reset to Default Path", func() {
+		settings.SelectedOutputDir = "" // Clear selected path in settings
+		modules.SetCustomOutputDir("")  // Reset in modules package
+		if err := saveSettings(settings); err != nil {
+			dialog.ShowError(err, myWindow) // Use Fyne's dialog for error
+		} else {
+			dialog.ShowInformation("Success", "Output directory reset to default.", myWindow) // Use Fyne's dialog for success
+		}
+		updateOutputDirLabel() // Update the label in the UI
+	})
+
+	rpcToggle := widget.NewCheck("Enable Discord RPC", func(checked bool) { // Changed label slightly for clarity
 		rpcRunning = checked
 		settings.RPCEnabled = checked
 		if err := saveSettings(settings); err != nil {
@@ -368,8 +407,12 @@ func main() {
 
 	settingsTab := container.NewTabItem("Settings",
 		container.NewVBox(
-			widget.NewLabel("Settings"),
+			currentOutputDirLabel, // Display current path
+			selectDirButton,       // Button to select new path
+			resetDirButton,        // Button to reset to default
+			widget.NewSeparator(), // Separator for better organization
 			rpcToggle,
+			// Add any other existing settings here
 		),
 	)
 
