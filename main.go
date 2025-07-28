@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	currentVersion = "1.0.8"
+	currentVersion = "1.0.9"
 	updateCheckURL = "https://raw.githubusercontent.com/LewdLillyVT/godiag/refs/heads/main/version.json"
 )
 
@@ -124,6 +124,12 @@ func main() {
 	myWindow := myApp.NewWindow("GoDiag by LewdLillyVT")
 	myWindow.Resize(fyne.NewSize(400, 600))
 
+	settings, err := loadSettings()
+	if err != nil {
+		dialog.ShowError(err, myWindow)
+		return
+	}
+
 	// Ensure the output directory exists
 	outputDir, err := modules.EnsureOutputDir()
 	if err != nil {
@@ -138,12 +144,6 @@ func main() {
 			promptForUpdate(versionInfo, myWindow)
 		}
 	}()
-
-	settings, err := loadSettings()
-	if err != nil {
-		dialog.ShowError(err, myWindow)
-		return
-	}
 
 	// Track RPC state
 	var rpcRunning = settings.RPCEnabled
